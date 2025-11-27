@@ -19,6 +19,7 @@ resource "aws_s3_bucket" "example" {
   }
 }
 
+
 ###########################################################
 # Uploading a File Containing Your RSA Private Key
 ###########################################################
