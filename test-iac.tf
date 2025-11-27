@@ -1,12 +1,12 @@
 provider "aws" {
   region = "us-east-1"
-  access_key = "AKIAT4GVSAXXDGNRNT7U"  # ❌ Hardcoded AWS access key
-  secret_key = "PI1GH82AHTEOzytNKSfe5vd14uRHGwhkWAvylrwi"  # ❌ Hardcoded AWS secret key
+  access_key = "AKIAT4GVSAXXDGNRNT7U"  # Hardcoded AWS access key
+  secret_key = "PI1GH82AHTEOzytNKSfe5vd14uRHGwhkWAvylrwi"  # Hardcoded AWS secret key
 }
 
 resource "aws_s3_bucket" "example" {
-  bucket = "my-example-bucket"  # ⚠️ Make sure the bucket name is globally unique
-  acl    = "public-read"        # ❌ Public access granted, exposing bucket contents
+  bucket = "my-example-bucket"  # Make sure the bucket name is globally unique
+  acl    = "public-read"        # Public access granted, exposing bucket contents
 
   tags = {
     Name        = "ExampleBucket"
@@ -19,7 +19,7 @@ resource "aws_s3_bucket_object" "example_object" {
   key    = "example-file.txt"
   content = "This is a test file."
 
-  acl    = "public-read"  # ❌ Exposing the file publicly
+  acl    = "public-read"  # Exposing the file publicly
 }
 
 resource "aws_security_group" "example" {
@@ -31,6 +31,6 @@ resource "aws_security_group" "example" {
     from_port   = 0
     to_port     = 65535
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # ⚠️ Allowing access from anywhere
+    cidr_blocks = ["0.0.0.0/0"]  # Allowing access from anywhere
   }
 }
