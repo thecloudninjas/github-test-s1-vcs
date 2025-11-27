@@ -1,78 +1,36 @@
-import os
-import sqlite3
-import pickle
-from flask import Flask, request, render_template_string
+provider "aws" {
+  region = "us-east-1"
+  access_key = "AKIAT4GVSAXXDGNRNT7U"  # ❌ Hardcoded AWS access key
+  secret_key = "PI1GH82AHTEOzytNKSfe5vd14uRHGwhkWAvylrwi"  # ❌ Hardcoded AWS secret key
+}
 
-app = Flask(__name__)
-DB_FILE = "vuln.db"
+resource "aws_s3_bucket" "example" {
+  bucket = "my-example-bucket"  # ⚠️ Make sure the bucket name is globally unique
+  acl    = "public-read"        # ❌ Public access granted, exposing bucket contents
 
-# ❌ Insecure DB setup
-conn = sqlite3.connect(DB_FILE)
-cursor = conn.cursor()
-cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)")
-cursor.execute("INSERT INTO users (username, password) VALUES ('admin', 'admin123')")  # Hardcoded password
-conn.commit()
-conn.close()
+  tags = {
+    Name        = "ExampleBucket"
+    Environment = "Development"
+  }
+}
 
-@app.route("/")
-def index():
-    return "Welcome to the vulnerable app!"
+resource "aws_s3_bucket_object" "example_object" {
+  bucket = aws_s3_bucket.example.bucket
+  key    = "example-file.txt"
+  content = "This is a test file."
 
-# ❌ Command Injection
-@app.route("/ping")
-def ping():
-    ip = request.args.get("ip", "")
-    output = os.popen(f"ping -c 2 {ip}").read()
-    return f"<pre>{output}</pre>"
+  acl    = "public-read"  # ❌ Exposing the file publicly
+}
 
-# ❌ SQL Injection
-@app.route("/login", methods=["POST"])
-def login():
-    username = request.form.get("username", "")
-    password = request.form.get("password", "")
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
-    result = cursor.execute(query).fetchone()
-    conn.close()
-    if result:
-        return "Login successful!"
-    return "Invalid credentials."
+resource "aws_security_group" "example" {
+  name = "example-sg"
+  description = "Allow all inbound traffic"
 
-# ❌ Environment Info Leak
-@app.route("/debug")
-def debug():
-    return f"<pre>{os.environ}</pre>"
-
-# ❌ Reflected XSS
-@app.route("/search")
-def search():
-    q = request.args.get("q", "")
-    return render_template_string(f"<h1>Search result for: {q}</h1>")
-
-# ❌ Insecure Deserialization
-@app.route("/load", methods=["POST"])
-def load():
-    data = request.files["file"].read()
-    obj = pickle.loads(data)
-    return f"Loaded object: {obj}"
-
-# ❌ Insecure File Upload
-@app.route("/upload", methods=["POST"])
-def upload():
-    file = request.files["file"]
-    file.save(os.path.join("/tmp/uploads", file.filename))  # No validation, open path
-    return "File uploaded!"
-
-# ❌ Eval on user input
-@app.route("/calc")
-def calc():
-    expr = request.args.get("expr", "")
-    try:
-        result = eval(expr)  # Remote code execution possible!
-        return f"Result: {result}"
-    except Exception as e:
-        return f"Error: {e}"
-
-if __name__ == "__main__":
-    app.run(debug=True)
+  # Security group with open inbound rules (misconfiguration)
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # ⚠️ Allowing access from anywhere
+  }
+}
