@@ -98,8 +98,8 @@ Resources:
       Name: /insecure/demo/aws_credentials
       Type: String           # NOT SecureString - this is intentionally bad
       Value: |
-        aws_access_key_id = AKIAX24QKKOLD232HO6I
-        aws_secret_access_key = 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
+        aws_access_key_id = AKIAX24QKKOLPQ4E7FOQ
+        aws_secret_access_key = 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
         output = json
         region = us-east-2
       Tags:
