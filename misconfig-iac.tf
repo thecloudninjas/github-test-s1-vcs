@@ -1,26 +1,17 @@
 apiVersion: v1
-kind: Pod
+kind: ServiceAccount
 metadata:
-  name: critical-insecure-pod
-spec:
-  hostNetwork: true              # ❌ Host network access
-  hostPID: true                  # ❌ Host process access
-  hostIPC: true                  # ❌ Host IPC access
-  containers:
-    - name: attacker-container
-      image: nginx
-      securityContext:
-        privileged: true         # ❌ CRITICAL
-        runAsUser: 0             # ❌ Root user
-        allowPrivilegeEscalation: true
-        capabilities:
-          add:
-            - ALL                # ❌ Adds ALL Linux capabilities
-      volumeMounts:
-        - name: host-root
-          mountPath: /host
-  volumes:
-    - name: host-root
-      hostPath:
-        path: /
-        type: Directory
+  name: admin-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-binding
+subjects:
+  - kind: ServiceAccount
+    name: admin-sa
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin      # ❌ Full cluster access
+  apiGroup: rbac.authorization.k8s.io
