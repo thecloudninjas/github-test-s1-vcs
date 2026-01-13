@@ -1,17 +1,10 @@
 apiVersion: v1
-kind: ServiceAccount
+kind: Pod
 metadata:
-  name: admin-sa
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: admin-binding
-subjects:
-  - kind: ServiceAccount
-    name: admin-sa
-    namespace: default
-roleRef:
-  kind: ClusterRole
-  name: cluster-admin      # ❌ Full cluster access
-  apiGroup: rbac.authorization.k8s.io
+  name: pod-running-as-root-explicit
+spec:
+  containers:
+    - name: app
+      image: nginx:latest
+      securityContext:
+        runAsUser: 0     # ❌ Explicit root
