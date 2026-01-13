@@ -1,26 +1,26 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: with-vulnerabilities
+  name: critical-insecure-pod
 spec:
-  hostNetwork: true               # ❌ Shares node network namespace
-  hostPID: true                   # ❌ Shares node process namespace
+  hostNetwork: true              # ❌ Host network access
+  hostPID: true                  # ❌ Host process access
+  hostIPC: true                  # ❌ Host IPC access
   containers:
-    - name: insecure-container
-      image: your-container-image:tag
+    - name: attacker-container
+      image: nginx
       securityContext:
-        runAsUser: 0              # ❌ Runs as root
-        privileged: true          # ❌ Full privileges on the node
-        allowPrivilegeEscalation: true  # ❌ Can escalate privileges
+        privileged: true         # ❌ CRITICAL
+        runAsUser: 0             # ❌ Root user
+        allowPrivilegeEscalation: true
         capabilities:
           add:
-            - NET_RAW             # ❌ Enables raw sockets (often flagged)
-            - SYS_ADMIN           # ❌ Very powerful capability
+            - ALL                # ❌ Adds ALL Linux capabilities
       volumeMounts:
         - name: host-root
-          mountPath: /host        # ❌ Mounts host filesystem inside container
+          mountPath: /host
   volumes:
     - name: host-root
       hostPath:
-        path: /                   # ❌ HostPath to node root (critical risk)
+        path: /
         type: Directory
